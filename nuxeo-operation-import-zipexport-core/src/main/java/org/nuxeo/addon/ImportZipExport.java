@@ -30,7 +30,6 @@ public class ImportZipExport {
     @OperationMethod
     public DocumentModel run(Blob input) throws IOException {
         ExportedZipImporter importer = new ExportedZipImporter();
-        importer.create(session, input, path, false, null, null);
-        return session.getDocument(new PathRef(path));
+        return importer.create(session, input, path, false, null, null);
     }
 }
