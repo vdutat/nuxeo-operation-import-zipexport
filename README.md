@@ -37,11 +37,46 @@ nuxeoctl mp-install nuxeo-operation-import-zipexport/nuxeo-operation-import-zipe
 
 ## How to use
 
+### ZIP export of folderish document
+
+In a browser, navigate to [http://localhost:8080/nuxeo/api/v1/path/default-domain/workspaces/ws1/@rendition/zipTreeExport](http://localhost:8080/nuxeo/api/v1/path/default-domain/workspaces/ws1/@rendition/zipTreeExport)
+
+
+### Create File document for ZIP export
+
 ```
-curl -XPOST -u Administrator:Administrator -H "Content-type:application/json" \
-"http://localhost:8080/nuxeo/api/v1/path/default-domain/workspaces/ws1/export.zip/@blob/file:content/@op/FileManager.ImportZipExport" \
--d "{\"params\":{\"path\":\"/default-domain/workspaces/ws1\"}}"
+curl -su Administrator:Administrator -XPOST \
+-H "properties:*" -H 'Content-Type:application/json' \
+http://localhost:8080/nuxeo/api/v1/repo/default/path/default-domain/workspaces/ws2 \
+-D /tmp/response-headers.txt \
+-d '{ "entity-type":"document", "name":"ws1-export.zip","type":"File", "properties": { "dc:title":"ws1-export.zip"} }' \
+|jq
 ```
+
+### Attach ZIP export to File document
+
+```
+curl -su Administrator:Administrator -XPOST \
+http://localhost:8080/nuxeo/api/v1/automation/Blob.AttachOnDocument \
+-F request="{\"params\":{\"document\":\"/default-domain/workspaces/ws2/ws1-export.zip\"},\"context\":{}}" \
+-F input=@ws1-export.zip \
+> /dev/null
+```
+
+### Import ZIP export
+
+```
+curl -XPOST -vu Administrator:Administrator \
+-H "Content-type:application/json" -H'properties:*' \
+http://localhost:8080/nuxeo/api/v1/path/default-domain/workspaces/ws2/ws1-export.zip/@blob/file:content/@op/FileManager.ImportZipExport \
+-d '{
+  "params":{
+    "path":"/default-domain/workspaces/ws2"
+  },
+  "context": {}
+}'
+```
+==> Workspace `/default-domain/workspaces/ws2/ws1` gets created.
 
 ## Support
 
